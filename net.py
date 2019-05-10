@@ -67,9 +67,9 @@ class MultilayerGraph(nx.Graph):
 
     def __init__(self, incoming_graph_data=None, n_aspects=1, **attr):
         if hasattr(incoming_graph_data, 'aspects'):
-            self.aspects = [dict() for _ in incoming_graph_data.aspects]
+            self.aspects = tuple(dict() for _ in incoming_graph_data.aspects)
         else:
-            self.aspects = [dict() for _ in range(n_aspects+1)]
+            self.aspects = tuple(dict() for _ in range(n_aspects+1))
         self.adjlist_outer_dict_factory = lambda: adj_dict(self)
         self.node_dict_factory = lambda: node_dict(self)
         super().__init__(incoming_graph_data, **attr)
