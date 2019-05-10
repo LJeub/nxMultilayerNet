@@ -8,5 +8,5 @@ setup(
     python_requires='>=3',
     install_requires=['networkx >= 2.3',
                       ],
-    py_modules=['net'],
+    py_modules=['nxmultilayer'],
 )
