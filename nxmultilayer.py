@@ -247,3 +247,24 @@ class MultilayerDiGraph(MultilayerGraph, nx.DiGraph):
                 n2 = tuple(n2_list)
                 if n2 in self:
                     self.remove_edge(n1, n2)
+
+
+def aggregate(mg, weighted=True):
+    if mg.is_directed():
+        g = nx.DiGraph()
+    else:
+        g = nx.Graph()
+    for n, data in mg.aspects[0].items():
+        g.add_node(n)
+        g.nodes[n].update(data)
+    if weighted:
+        for n1, n2, w in mg.edges(data='weight', default=1):
+            if g.has_edge(n1[0], n2[0]):
+                g[n1[0]][n2[0]]['weight'] += w
+            else:
+                g.add_edge(n1[0], n2[0], weight=w)
+    else:
+        for n1, n2 in mg.edges():
+            g.add_edge(n1[0], n2[0])
+
+    return g
