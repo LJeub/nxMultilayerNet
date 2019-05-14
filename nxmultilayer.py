@@ -1,11 +1,13 @@
 import networkx as nx
 from copy import deepcopy
 from itertools import product
+from collections.abc import Iterable
 """
 Work with multilayer networks on top of NetworkX
 """
 
-class node_dict(dict):
+
+class NodeDict(dict):
     """Helper class to ensure aspects are updated correctly for new nodes"""
     def __init__(self, mg):
         super().__init__()
@@ -21,7 +23,7 @@ class node_dict(dict):
             raise ValueError("node key does not match number of layers")
 
 
-class adj_dict(dict):
+class AdjDict(dict):
     """Helper class to ensure all new nodes have correct format"""
     def __init__(self, mg):
         super().__init__()
@@ -32,6 +34,40 @@ class adj_dict(dict):
             super().__setitem__(key, value)
         else:
             raise ValueError("node key does not match number of layers")
+
+
+class Layers:
+    def __init__(self, mg):
+        self._mg = mg
+
+    def __getitem__(self, item):
+        if isinstance(item, slice):
+            if item.start is None and item.stop is None and item.step is None:
+                nodes = self._mg.nodes
+            else:
+                if len(self._mg.aspects) == 2:
+                    nodes = ((i, l) for l in range(*item.indices(len(self._mg.aspects[1]))) for i in self._mg.aspects[0])
+                else:
+                    raise ValueError("wrong number of dimensions for layer indexing")
+        elif isinstance(item, tuple):
+            node_iter = [self._mg.aspects[0]]
+            for li, ai in zip(item, self._mg.aspects[1:]):
+                if isinstance(li, slice):
+                    if li.start is None and li.stop is None and li.step is None:
+                        node_iter.append(ai)
+                    else:
+                        node_iter.append(range(*li.indices(len(ai))))
+                elif isinstance(li, Iterable):
+                    node_iter.append(li)
+                else:
+                    node_iter.append((li,))
+            nodes = product(*node_iter)
+        else:
+            if len(self._mg.aspects) == 2:
+                nodes = ((i, item) for i in self._mg.aspects[0])
+            else:
+                raise ValueError("wrong number of dimensions for layer indexing")
+        return self._mg.subgraph(nodes)
 
 
 class MultilayerGraph(nx.Graph):
@@ -70,8 +106,9 @@ class MultilayerGraph(nx.Graph):
             self.aspects = tuple(dict() for _ in incoming_graph_data.aspects)
         else:
             self.aspects = tuple(dict() for _ in range(n_aspects+1))
-        self.adjlist_outer_dict_factory = lambda: adj_dict(self)
-        self.node_dict_factory = lambda: node_dict(self)
+        self.layers = Layers(self)
+        self.adjlist_outer_dict_factory = lambda: AdjDict(self)
+        self.node_dict_factory = lambda: NodeDict(self)
         super().__init__(incoming_graph_data, **attr)
 
     def subgraph(self, nodes):
@@ -86,14 +123,13 @@ class MultilayerGraph(nx.Graph):
 
     def layer(self, l):
         """return specified layer of multilayer network as SubGraph view"""
-        nodes = ((i, *l) for i in self.aspects[0])
-        return self.subgraph(nodes)
+        return self.layers[l]
 
     def interlayer(self, l1, l2=None):
         """return interlayer network for given layer (optional to other layer)"""
-        nodes1 = ((i, *l1) for i in self.aspects[0])
+        nodes1 = self.layers[l1].nodes
         if l2 is not None:
-            nodes2 = set((i, *l2) for i in self.aspects[0])
+            nodes2 = self.layers[l2].nodes
             edges = ((n1, n2) for n1 in nodes1 for n2 in self[n1] if n2 in nodes2)
         else:
             edges = ((n1, n2) for n1 in nodes1 for n2 in self[n1] if n2 not in nodes1)
@@ -112,6 +148,9 @@ class MultilayerGraph(nx.Graph):
         node_mapping: map nodes of graph to nodes (not state-nodes) of multilayer network (optional if nodes are already
             consistent)
         """
+        if not isinstance(layer, Iterable):
+            layer = (layer,)
+
         if node_mapping is None:
             def mapping(item):
                 return (item, *layer)
@@ -136,6 +175,9 @@ class MultilayerGraph(nx.Graph):
         :param layer:
         :return:
         """
+        if not isinstance(layer, Iterable):
+            layer = (layer,)
+
         for i in self.aspects[0]:
             node = (i, *layer)
             if node in self:
