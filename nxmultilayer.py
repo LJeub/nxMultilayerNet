@@ -249,7 +249,18 @@ class MultilayerDiGraph(MultilayerGraph, nx.DiGraph):
                     self.remove_edge(n1, n2)
 
 
-def aggregate(mg, weighted=True):
+def aggregate(mg, weighted=True, weight='weight', default=1, aggregate_weight='weight'):
+    """
+    Create aggregate network from multilayer network and return as nx.Graph or nx.DiGraph
+
+    :param mg: multilayer network
+    :param weighted: bool (default: True) select whether aggregate network should be weighted (default) or not
+    :param weight: attribute name for storing weights (default: 'weight')
+    :param default: default value for edges without weight (default: 1)
+    :param aggregate_weight: (default: 'weight') attribute name for storing weights in aggregate network
+    :return: aggregate network: (nx.DiGraph if mg.is_directed(): else: nx.Graph)
+    """
+
     if mg.is_directed():
         g = nx.DiGraph()
     else:
@@ -258,11 +269,12 @@ def aggregate(mg, weighted=True):
         g.add_node(n)
         g.nodes[n].update(data)
     if weighted:
-        for n1, n2, w in mg.edges(data='weight', default=1):
+        for n1, n2, w in mg.edges(data=weight, default=default):
             if g.has_edge(n1[0], n2[0]):
-                g[n1[0]][n2[0]]['weight'] += w
+                g[n1[0]][n2[0]][aggregate_weight] += w
             else:
-                g.add_edge(n1[0], n2[0], weight=w)
+                g.add_edge(n1[0], n2[0])
+                g[n1[0]][n2[0]][aggregate_weight] = w
     else:
         for n1, n2 in mg.edges():
             g.add_edge(n1[0], n2[0])
