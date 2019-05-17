@@ -185,6 +185,13 @@ class MultilayerGraph(nx.Graph):
         for l, a in zip(layer, self.aspects[1:]):
             del(a[l])
 
+    def remove_physical_node(self, node):
+        if node in self.aspects[0]:
+            for sn in product((node,), *self.aspects[1:]):
+                if sn in self:
+                    self.remove_node(sn)
+            del(self.aspects[0][node])
+
     def add_categorical_coupling(self, aspect, self_coupling=False, **attr):
         """aspect > 0 as aspect[0] are the node labels"""
         for n1 in self.nodes:
