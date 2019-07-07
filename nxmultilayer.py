@@ -144,6 +144,7 @@ class MultilayerGraph(nx.Graph):
         return self.edge_subgraph(edges)
 
     def make_fully_interconnected(self, **attr):
+        """add any missing state nodes to the network such that each physical node is represented in each layer."""
         for n in product(*self.aspects):
             if n not in self:
                 self.add_node(n, **attr)
@@ -194,6 +195,7 @@ class MultilayerGraph(nx.Graph):
             del(a[l])
 
     def remove_physical_node(self, node):
+        """Remove all state nodes representing a particular physical node and remove the physical node from aspects."""
         if node in self.aspects[0]:
             for sn in product((node,), *self.aspects[1:]):
                 if sn in self:
