@@ -200,7 +200,7 @@ class MultilayerGraph(nx.Graph):
                     self.remove_node(sn)
             del(self.aspects[0][node])
 
-    def add_categorical_coupling(self, aspect, self_coupling=False, **attr):
+    def add_categorical_coupling(self, aspect=1, self_coupling=False, **attr):
         """aspect > 0 as aspect[0] are the node labels"""
         for n1 in self.nodes:
             n2_list = list(n1)
@@ -211,7 +211,7 @@ class MultilayerGraph(nx.Graph):
                     if self_coupling or n1 != n2:
                         self.add_edge(n1, n2, **attr)
 
-    def remove_categorical_coupling(self, aspect, self_coupling=False):
+    def remove_categorical_coupling(self, aspect=1, self_coupling=False):
         for n1 in self.nodes:
             n2_list = list(n1)
             for a in self.aspects[aspect]:
@@ -222,7 +222,7 @@ class MultilayerGraph(nx.Graph):
                         if self.has_edge(n1, n2):
                             self.remove_edge(n1, n2)
 
-    def add_ordinal_coupling(self, aspect, key=None, reverse=False, **attr):
+    def add_ordinal_coupling(self, aspect=1, key=None, reverse=False, **attr):
         """ aspect>0 and needs to be sortable. Optionally specify key for sorting"""
         aspect_keys = sorted(self.aspects[aspect], key=key, reverse=reverse)
         aspect_map = {k: i for i, k in enumerate(aspect_keys)}
@@ -237,7 +237,7 @@ class MultilayerGraph(nx.Graph):
                         self.add_edge(n2, n1, **attr) # make sure this behaves as expected in directed network
                     break
 
-    def remove_ordinal_coupling(self, aspect, key=None, reverse=False):
+    def remove_ordinal_coupling(self, aspect=1, key=None, reverse=False):
         aspect_keys = sorted(self.aspects[aspect], key=key, reverse=reverse)
         aspect_map = {k: i for i, k in enumerate(aspect_keys)}
         for n1 in self.nodes:
@@ -255,7 +255,7 @@ class MultilayerGraph(nx.Graph):
 
 
 class MultilayerDiGraph(MultilayerGraph, nx.DiGraph):
-    def add_directed_ordinal_coupling(self, aspect, key=None, reverse=False, **attr):
+    def add_directed_ordinal_coupling(self, aspect=1, key=None, reverse=False, **attr):
         """ aspect>0 and needs to be sortable. Optionally specify key for sorting"""
         aspect_keys = sorted(self.aspects[aspect], key=key, reverse=reverse)
         aspect_map = {k: i for i, k in enumerate(aspect_keys)}
@@ -268,7 +268,7 @@ class MultilayerDiGraph(MultilayerGraph, nx.DiGraph):
                     self.add_edge(n1, n2, **attr)
                     break
 
-    def remove_directed_ordinal_coupling(self, aspect, key=None, reverse=False):
+    def remove_directed_ordinal_coupling(self, aspect=1, key=None, reverse=False):
         """ aspect>0 and needs to be sortable. Optionally specify key for sorting"""
         aspect_keys = sorted(self.aspects[aspect], key=key, reverse=reverse)
         aspect_map = {k: i for i, k in enumerate(aspect_keys)}
@@ -281,7 +281,7 @@ class MultilayerDiGraph(MultilayerGraph, nx.DiGraph):
                     self.remove_edge(n1, n2)
                     break
 
-    def add_delay_ordinal_coupling(self, aspect, key=None, reverse=False, **attr):
+    def add_delay_ordinal_coupling(self, aspect=1, key=None, reverse=False, **attr):
         """keys for aspect should be numeric for reasonable results"""
         aspect_keys = sorted(self.aspects[aspect], key=key, reverse=reverse)
         aspect_map = {k: i for i, k in enumerate(aspect_keys)}
@@ -293,7 +293,7 @@ class MultilayerDiGraph(MultilayerGraph, nx.DiGraph):
                 if n2 in self:
                     self.add_edge(n1, n2, delay=n2[aspect]-n1[aspect], **attr)
 
-    def remove_delay_ordinal_coupling(self, aspect, key=None, reverse=False):
+    def remove_delay_ordinal_coupling(self, aspect=1, key=None, reverse=False):
         """keys for aspect should be numeric for reasonable results"""
         aspect_keys = sorted(self.aspects[aspect], key=key, reverse=reverse)
         aspect_map = {k: i for i, k in enumerate(aspect_keys)}
