@@ -337,3 +337,37 @@ def aggregate(mg, weighted=True, weight='weight', default=1, aggregate_weight='w
             g.add_edge(n1[0], n2[0])
 
     return g
+def write_gml(mg, path, stringizer=nx.readwrite.gml.literal_stringizer):
+    """
+    Write multilayer graph in GML format.
+
+    TODO: Implement storing of aspect information
+
+    :param mg: multilayer graph
+    :param path: path
+    :param stringizer: (optional) function to convert python values to strings (needs to at least support writing tuples)
+    """
+    nx.readwrite.write_gml(mg, path, stringizer)
+
+
+def read_gml(path, stringizer=nx.readwrite.gml.literal_destringizer):
+    """
+    Read multilayer graph from GML formatted file
+
+    TODO: Implement storing of aspect information
+
+    :param path: Path to GML file
+    :param stringizer: (optional) function to convert python values from strings (needs to at least support reading
+                       tuples)
+    :return: MultilayerGraph or MultilayerDiGraph
+    """
+    g = nx.readwrite.read_gml(path, stringizer)
+    nodes = list(g.nodes)
+    if nodes:
+        if g.is_directed():
+            mg = MultilayerDiGraph(g, n_aspects=len(nodes[0]))
+        else:
+            mg = MultilayerGraph(g, n_aspects=len(nodes[0]))
+    else:
+        mg = MultilayerGraph()
+    return mg
