@@ -37,37 +37,45 @@ class AdjDict(dict):
 
 
 class Layers:
+    """
+    Implement layer slicing.
+    """
     def __init__(self, mg):
         self._mg = mg
 
     def __getitem__(self, item):
         if isinstance(item, slice):
             if item.start is None and item.stop is None and item.step is None:
-                nodes = self._mg.nodes
+                layers = product(*self._mg.aspects[1:])
             else:
                 if len(self._mg.aspects) == 2:
-                    nodes = ((i, l) for l in range(*item.indices(len(self._mg.aspects[1]))) for i in self._mg.aspects[0])
+                    layers = range(*item.indices((len(self._mg.aspects[1]))))
                 else:
                     raise ValueError("wrong number of dimensions for layer indexing")
         elif isinstance(item, tuple):
-            node_iter = [self._mg.aspects[0]]
+            layer_iter = []
             for li, ai in zip(item, self._mg.aspects[1:]):
                 if isinstance(li, slice):
                     if li.start is None and li.stop is None and li.step is None:
-                        node_iter.append(ai)
+                        layer_iter.append(ai)
                     else:
-                        node_iter.append(range(*li.indices(len(ai))))
+                        layer_iter.append(range(*li.indices(len(ai))))
                 elif isinstance(li, Iterable):
-                    node_iter.append(li)
+                    layer_iter.append(li)
                 else:
-                    node_iter.append((li,))
-            nodes = product(*node_iter)
+                    layer_iter.append((li,))
+            layers = product(*layer_iter)
         else:
             if len(self._mg.aspects) == 2:
-                nodes = ((i, item) for i in self._mg.aspects[0])
+                layers = item
             else:
                 raise ValueError("wrong number of dimensions for layer indexing")
-        return self._mg.subgraph(nodes)
+        edges = []
+        for l in layers:
+            nodes = set((i, *l) for i in self._mg.aspects[0])
+            nodes.intersection_update(self._mg.nodes)
+            edges.extend((n1, n2) for n1 in nodes for n2 in self._mg.adj[n1] if n2 in nodes)
+        return self._mg.edge_subgraph(edges)
 
 
 class MultilayerGraph(nx.Graph):
