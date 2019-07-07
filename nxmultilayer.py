@@ -111,7 +111,7 @@ class MultilayerGraph(nx.Graph):
 
     def __init__(self, incoming_graph_data=None, n_aspects=1, **attr):
         if hasattr(incoming_graph_data, 'aspects'):
-            self.aspects = tuple(dict() for _ in incoming_graph_data.aspects)
+            self.aspects = deepcopy(incoming_graph_data.aspects)
         else:
             self.aspects = tuple(dict() for _ in range(n_aspects+1))
         self.layers = Layers(self)
