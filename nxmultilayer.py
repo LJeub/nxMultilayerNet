@@ -5,6 +5,15 @@ import networkx as nx
 from copy import deepcopy
 from itertools import product
 from collections.abc import Iterable
+from pkg_resources import get_distribution, DistributionNotFound
+
+
+# define __version__
+try:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
+    # package is not installed
+    pass
 
 
 class NodeDict(dict):
