@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='nxMultilayerNet',
+    name='nxmultilayer',
     description='NetworkX based multilayer networks',
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
