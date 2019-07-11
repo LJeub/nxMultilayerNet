@@ -1,10 +1,10 @@
+"""
+Work with multilayer networks on top of NetworkX
+"""
 import networkx as nx
 from copy import deepcopy
 from itertools import product
 from collections.abc import Iterable
-"""
-Work with multilayer networks on top of NetworkX
-"""
 
 
 class NodeDict(dict):
