@@ -361,24 +361,24 @@ def write_gml(mg, path, stringizer=nx.readwrite.gml.literal_stringizer):
     nx.readwrite.write_gml(mg, path, stringizer)
 
 
-def read_gml(path, stringizer=nx.readwrite.gml.literal_destringizer):
+def read_gml(path, label='label', destringizer=nx.readwrite.gml.literal_destringizer):
     """
     Read multilayer graph from GML formatted file
 
     TODO: Implement storing of aspect information
 
     :param path: Path to GML file
-    :param stringizer: (optional) function to convert python values from strings (needs to at least support reading
+    :param destringizer: (optional) function to convert python values from strings (needs to at least support reading
                        tuples)
     :return: MultilayerGraph or MultilayerDiGraph
     """
-    g = nx.readwrite.read_gml(path, stringizer)
+    g = nx.readwrite.read_gml(path, label, destringizer)
     nodes = list(g.nodes)
     if nodes:
         if g.is_directed():
-            mg = MultilayerDiGraph(g, n_aspects=len(nodes[0]))
+            mg = MultilayerDiGraph(g, n_aspects=len(nodes[0])-1)
         else:
-            mg = MultilayerGraph(g, n_aspects=len(nodes[0]))
+            mg = MultilayerGraph(g, n_aspects=len(nodes[0])-1)
     else:
         mg = MultilayerGraph()
     return mg
