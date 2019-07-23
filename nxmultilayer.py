@@ -76,7 +76,7 @@ class Layers:
             layers = product(*layer_iter)
         else:
             if len(self._mg.aspects) == 2:
-                layers = item
+                layers = [(item,)]
             else:
                 raise ValueError("wrong number of dimensions for layer indexing")
         edges = []
