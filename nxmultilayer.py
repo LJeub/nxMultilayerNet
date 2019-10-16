@@ -152,6 +152,12 @@ class MultilayerGraph(nx.Graph):
             edges = ((n1, n2) for n1 in nodes1 for n2 in self[n1] if n2 not in nodes1)
         return self.edge_subgraph(edges)
 
+    def interlayer_edges(self, **kwargs):
+        return (e for e in self.edges(**kwargs) if e[0][1:] != e[1][1:])
+
+    def intralayer_edges(self, **kwargs):
+        return (e for e in self.edges(**kwargs) if e[0][1:] == e[1][1:])
+
     def make_fully_interconnected(self, **attr):
         """add any missing state nodes to the network such that each physical node is represented in each layer."""
         for n in product(*self.aspects):
