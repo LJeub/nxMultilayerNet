@@ -4,6 +4,8 @@ Work with multilayer networks on top of NetworkX
 import networkx as nx
 from copy import deepcopy
 from itertools import product
+from functools import reduce
+from operator import mul
 from collections.abc import Iterable
 from pkg_resources import get_distribution, DistributionNotFound
 
@@ -55,7 +57,7 @@ class Layers:
     def __getitem__(self, item):
         if isinstance(item, slice):
             if item.start is None and item.stop is None and item.step is None:
-                layers = product(*self._mg.aspects[1:])
+                layers = list(product(*self._mg.aspects[1:]))
             else:
                 if len(self._mg.aspects) == 2:
                     layers = range(*item.indices((len(self._mg.aspects[1]))))
@@ -73,18 +75,34 @@ class Layers:
                     layer_iter.append(li)
                 else:
                     layer_iter.append((li,))
-            layers = product(*layer_iter)
+            layers = list(product(*layer_iter))
         else:
             if len(self._mg.aspects) == 2:
                 layers = [(item,)]
             else:
                 raise ValueError("wrong number of dimensions for layer indexing")
-        edges = []
+        edges = set()
+        all_nodes = set()
         for l in layers:
             nodes = set((i, *l) for i in self._mg.aspects[0])
             nodes.intersection_update(self._mg.nodes)
-            edges.extend((n1, n2) for n1 in nodes for n2 in self._mg.adj[n1] if n2 in nodes)
-        return self._mg.edge_subgraph(edges)
+            edges.update((n1, n2) for n1 in nodes for n2 in self._mg.adj[n1] if n2 in nodes)
+            all_nodes.update(nodes)
+        layer_view = nx.subgraph_view(self._mg, filter_node=lambda n: n in all_nodes,
+                                      filter_edge=lambda n1, n2: (n1, n2) in edges)
+        layer_view.aspects = tuple({} for _ in self._mg.aspects)
+        for n in layer_view.nodes:
+            layer_view.aspects[0][n[0]] = self._mg.aspects[0][n[0]]
+        for l in layers:
+            for i, li in enumerate(l):
+                layer_view.aspects[i+1][li] = self._mg.aspects[i+1][li]
+        return layer_view
+
+    def __iter__(self):
+        return (self._mg.layer(l) for l in product(*self._mg.aspects[1:]))
+
+    def __len__(self):
+        return reduce(mul, (len(a) for a in self._mg.aspects[1:]))
 
 
 class MultilayerGraph(nx.Graph):
