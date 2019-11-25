@@ -146,6 +146,12 @@ class MultilayerGraph(nx.Graph):
         self.node_dict_factory = lambda: NodeDict(self)
         super().__init__(incoming_graph_data, **attr)
 
+    def number_of_layers(self, aspect=None):
+        if aspect is None:
+            return len(self.layers)
+        else:
+            return len(self.aspects[aspect])
+
     def subgraph(self, nodes):
         sg = super().subgraph(nodes)
         sg.aspects = self.aspects
