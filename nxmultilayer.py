@@ -162,6 +162,16 @@ class MultilayerGraph(nx.Graph):
         sg.aspects = self.aspects
         return sg
 
+    def interlayer_view(self):
+        sg = nx.subgraph_view(self, filter_edge=lambda n1, n2: n1[1:] != n2[1:])
+        sg.aspects = self.aspects
+        return sg
+
+    def intralayer_view(self):
+        sg = nx.subgraph_view(self, filter_edge=lambda n1, n2: n1[1:] == n2[1:])
+        sg.aspects = self.aspects
+        return sg
+
     def layer(self, l):
         """return specified layer of multilayer network as SubGraph view"""
         return self.layers[l]
