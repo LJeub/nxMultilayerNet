@@ -198,16 +198,28 @@ class MultilayerGraph(nx.Graph):
             if n not in self:
                 self.add_node(n, **attr)
 
-    def add_layer(self, layer, graph, node_mapping=None):
+    def add_layer(self, layer, graph=None, node_mapping=None, attributes=None):
         """add layer from networkx graph
 
-        layer: layer to add edges to
+        layer: layer to add
         graph: graph containing new edges
         node_mapping: map nodes of graph to nodes (not state-nodes) of multilayer network (optional if nodes are already
             consistent)
+        attributes: optional attributes list
         """
         if not isinstance(layer, Iterable):
             layer = (layer,)
+        else:
+            layer = tuple(layer)
+
+        if attributes is None:
+            attributes = tuple({} for _ in self.aspects[1:])
+
+        for i, li in enumerate(layer):
+            if li not in self.aspects[i+1]:
+                self.aspects[i+1][li] = dict(attributes[i])
+            else:
+                self.aspects[i+1][li].update(attributes[i])
 
         if node_mapping is None:
             def mapping(item):
@@ -220,12 +232,13 @@ class MultilayerGraph(nx.Graph):
                 def mapping(item):
                     return (node_mapping(item), *layer)
 
-        for node1, node2, data in graph.edges(data=True):
-            self.add_edge(mapping(node1), mapping(node2))
-            self[mapping(node1)][mapping(node2)].update(data)
-            if not graph.is_directed() and self.is_directed():
-                self.add_edge(mapping(node2), mapping(node1))
-                self[mapping(node2)][mapping(node1)].update(data)
+        if graph is not None:
+            for node1, node2, data in graph.edges(data=True):
+                self.add_edge(mapping(node1), mapping(node2))
+                self[mapping(node1)][mapping(node2)].update(data)
+                if not graph.is_directed() and self.is_directed():
+                    self.add_edge(mapping(node2), mapping(node1))
+                    self[mapping(node2)][mapping(node1)].update(data)
 
     def remove_layer(self, layer):
         """
