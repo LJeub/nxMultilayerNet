@@ -248,6 +248,8 @@ class MultilayerGraph(nx.Graph):
         """
         if not isinstance(layer, Iterable):
             layer = (layer,)
+        else:
+            layer = tuple(layer)
 
         for i in self.aspects[0]:
             node = (i, *layer)
