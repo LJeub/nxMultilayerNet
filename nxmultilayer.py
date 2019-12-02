@@ -178,13 +178,32 @@ class MultilayerGraph(nx.Graph):
 
     def interlayer(self, l1, l2=None):
         """return interlayer network for given layer (optional to other layer)"""
-        nodes1 = self.layers[l1].nodes
-        if l2 is not None:
-            nodes2 = self.layers[l2].nodes
-            edges = ((n1, n2) for n1 in nodes1 for n2 in self[n1] if n2 in nodes2)
+        if not isinstance(l1, Iterable) and len(self.aspects) == 2:
+            l1 = (l1,)
         else:
-            edges = ((n1, n2) for n1 in nodes1 for n2 in self[n1] if n2 not in nodes1)
-        return self.edge_subgraph(edges)
+            l1 = tuple(l1)
+
+        if l2 is not None:
+            if not isinstance(l2, Iterable) and len(self.aspects) == 2:
+                l2 = (l2,)
+            else:
+                l2 = tuple(l2)
+            interlayer_view = nx.subgraph_view(self, filter_node=lambda n: n[1:] == l1 or n[1:] == l2,
+                                               filter_edge=lambda n1, n2: n1[1:] != n2[1:])
+        else:
+            interlayer_view = nx.subgraph_view(self, filter_edge=lambda n1, n2: n1[1:]==l1 and n1[1:] != n2[1:])
+
+        interlayer_view.aspects = tuple({} for _ in self.aspects)
+        for n in interlayer_view.nodes:
+            interlayer_view.aspects[0][n[0]] = self.aspects[0][n[0]]
+        if l2 is None:
+            for av, a in zip(interlayer_view.aspects[1:], self.aspects[1:]):
+                av.update(a)
+        else:
+            for i in range(1, len(self.aspects)):
+                interlayer_view.aspects[i][l1[i-1]] = self.aspects[i][l1[i-1]]
+                interlayer_view.aspects[i][l2[i-1]] = self.aspects[i][l2[i-1]]
+        return interlayer_view
 
     def interlayer_edges(self, **kwargs):
         return (e for e in self.edges(**kwargs) if e[0][1:] != e[1][1:])
