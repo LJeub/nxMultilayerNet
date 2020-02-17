@@ -31,7 +31,7 @@ class NodeDict(dict):
                 if k not in a:
                     a[k] = dict()
         else:
-            raise ValueError("Node key does not match number of layers")
+            raise ValueError("Node key does not match number of aspects")
 
 
 class AdjDict(dict):
@@ -44,7 +44,7 @@ class AdjDict(dict):
         if isinstance(key, tuple) and len(key) == len(self._mg.aspects):
             super().__setitem__(key, value)
         else:
-            raise ValueError("Node key does not match number of layers")
+            raise ValueError("Node key does not match number of aspects")
 
 
 class Layers:
