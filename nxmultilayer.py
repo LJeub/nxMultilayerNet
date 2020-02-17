@@ -165,6 +165,14 @@ class MultilayerGraph(nx.Graph):
         sg.aspects = self.aspects
         return sg
 
+    def filter_view(self, filter_node=nx.classes.filters.no_filter, filter_edge=nx.classes.filters.no_filter):
+        sg = nx.subgraph_view(self, filter_node=filter_node, filter_edge=filter_edge)
+        sg.aspects = tuple({} for _ in self.aspects)
+        for n in sg.nodes:
+            for i, ni in enumerate(n):
+                sg.aspects[i][ni] = self.aspects[i][ni]
+        return sg
+
     def interlayer_view(self):
         sg = nx.subgraph_view(self, filter_edge=lambda n1, n2: n1[1:] != n2[1:])
         sg.aspects = self.aspects
