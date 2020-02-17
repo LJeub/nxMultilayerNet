@@ -202,7 +202,7 @@ class MultilayerGraph(nx.Graph):
             interlayer_view = nx.subgraph_view(self, filter_node=lambda n: n[1:] == l1 or n[1:] == l2,
                                                filter_edge=lambda n1, n2: n1[1:] != n2[1:])
         else:
-            interlayer_view = nx.subgraph_view(self, filter_edge=lambda n1, n2: n1[1:]==l1 and n1[1:] != n2[1:])
+            interlayer_view = nx.subgraph_view(self, filter_edge=lambda n1, n2: n1[1:] == l1 and n1[1:] != n2[1:])
 
         interlayer_view.aspects = tuple({} for _ in self.aspects)
         for n in interlayer_view.nodes:
