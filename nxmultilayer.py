@@ -152,6 +152,9 @@ class MultilayerGraph(nx.Graph):
         else:
             return len(self.aspects[aspect])
 
+    def physical_node(self, node):
+        return {n for n in product([node], *self.aspects[1:]) if n in self}
+
     def subgraph(self, nodes):
         sg = super().subgraph(nodes)
         sg.aspects = self.aspects
